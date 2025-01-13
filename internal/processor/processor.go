@@ -14,24 +14,22 @@ import (
 )
 
 const (
-	targetSize = 378
+	targetSize = 484
 	gridSize   = 3
 	tileSize   = 116
-	spacing    = 15
+	spacing    = 68
 )
 
 func ProcessImage(imagePath string) error {
-	// Open and decode the image
-	file, err := os.Open(imagePath)
-	if err != nil {
-		return fmt.Errorf("error opening image: %w", err)
+	file, errOpen := os.Open(imagePath)
+	if errOpen != nil {
+		return fmt.Errorf("error opening image: %w", errOpen)
 	}
 	defer file.Close()
 
-	// Decode the image
-	img, format, err := image.Decode(file)
-	if err != nil {
-		return fmt.Errorf("error decoding image: %w", err)
+	img, format, errDecode := image.Decode(file)
+	if errDecode != nil {
+		return fmt.Errorf("error decoding image: %w", errDecode)
 	}
 
 	fmt.Printf("Processing %s format image\n", format)

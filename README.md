@@ -12,8 +12,8 @@
 <div align="center"></div>
 
 <p><font size="3">
-        The tool will create 9 PNG files in the same directory as the input image, named with the format `originalname_1.png` through `originalname_9.png`.
-    </font></p>
+    The tool will create 9 PNG files in the same directory as the input image, named with the format `originalname_1.png` through `originalname_9.png`.
+</font></p>
 
 ## 🎯 Features
 
