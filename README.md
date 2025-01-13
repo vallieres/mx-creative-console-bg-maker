@@ -39,12 +39,12 @@ Using Go binary:
 go install github.com/vallieres/mx-creative-console-bg-maker/cmd/ccbm@latest
 ```
 
-## 🛞  Usage
+## 🛞 Usage
 
 ```bash
 ccbm <image_path>
 ```
 
-## License
+## 📝 License
 
-MIT
+MPL-2.0
