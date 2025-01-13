@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD002 MD013 MD033 MD041 -->
 <h1 align="center">
     <a name="logo" href="https://github.com/vallieres/mx-creative-console-bg-maker">
-        <img src="https://github.com/vallieres/mx-creative-console-bg-maker/assets/182217/bd6042a7-bcfe-4603-b68e-1d2d095372b0" alt="MX Creative Console Background Maker" width="200">
+        <img src="https://github.com/user-attachments/assets/b9a01a70-05a1-4e4c-9f3d-d6c7a99dc504" alt="MX Creative Console Background Maker" width="200">
     </a>
     <br />
     MX Creative Console Background Maker
