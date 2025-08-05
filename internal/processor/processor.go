@@ -29,19 +29,17 @@ func ProcessImage(imagePath string) error {
 	defer file.Close()
 
 	// Decode the image
-	img, format, err := image.Decode(file)
+	img, _, err := image.Decode(file)
 	if err != nil {
 		return fmt.Errorf("error decoding image: %w", err)
 	}
-
-	fmt.Printf("Processing %s format image\n", format)
 
 	// Get original dimensions
 	bounds := img.Bounds()
 	origWidth := bounds.Max.X - bounds.Min.X
 	origHeight := bounds.Max.Y - bounds.Min.Y
 
-	fmt.Printf("Original dimensions: %dx%d\n", origWidth, origHeight)
+	// Original dimensions logged
 
 	// Determine which dimension to resize based on
 	var resized image.Image
@@ -56,7 +54,7 @@ func ProcessImage(imagePath string) error {
 	newWidth := newBounds.Max.X - newBounds.Min.X
 	newHeight := newBounds.Max.Y - newBounds.Min.Y
 
-	fmt.Printf("After resize: %dx%d\n", newWidth, newHeight)
+	// Resize completed
 
 	// Create a square image for cropping from the center
 	squared := image.NewRGBA(image.Rect(0, 0, targetSize, targetSize))
@@ -94,12 +92,14 @@ func ProcessImage(imagePath string) error {
 			}
 
 			if errEncode := png.Encode(outputFile, tile); errEncode != nil {
-				outputFile.Close()
+				_ = outputFile.Close() // Best effort cleanup
 				return fmt.Errorf("error encoding tile %d: %w", count, errEncode)
 			}
 
-			outputFile.Close()
-			fmt.Printf("Created tile %d: %s\n", count, outputPath)
+			if closeErr := outputFile.Close(); closeErr != nil {
+				return fmt.Errorf("error closing output file %d: %w", count, closeErr)
+			}
+			// Tile created successfully
 			count++
 		}
 	}
