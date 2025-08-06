@@ -40,31 +40,31 @@ func NewServiceWithDeps(fs FileSystem, decoder ImageDecoder, encoder ImageEncode
 
 // ProcessImage processes an image file and splits it into tiles.
 func (s *Service) ProcessImage(imagePath string) error {
-	img, err := s.loadImage(imagePath)
-	if err != nil {
-		return fmt.Errorf("failed to load image: %w", err)
+	img, loadErr := s.LoadImage(imagePath)
+	if loadErr != nil {
+		return fmt.Errorf("failed to load image: %w", loadErr)
 	}
 
-	processedImg := s.processImage(img)
+	processedImg := s.ProcessImageData(img)
 
-	if saveErr := s.saveTiles(processedImg, imagePath); saveErr != nil {
+	if saveErr := s.SaveTiles(processedImg, imagePath); saveErr != nil {
 		return fmt.Errorf("failed to save tiles: %w", saveErr)
 	}
 
 	return nil
 }
 
-// loadImage loads and decodes an image from file.
-func (s *Service) loadImage(imagePath string) (*ProcessedImage, error) {
-	file, err := s.fileSystem.Open(imagePath)
-	if err != nil {
-		return nil, fmt.Errorf("error opening image: %w", err)
+// LoadImage loads and decodes an image from file.
+func (s *Service) LoadImage(imagePath string) (*ProcessedImage, error) {
+	file, openErr := s.fileSystem.Open(imagePath)
+	if openErr != nil {
+		return nil, fmt.Errorf("error opening image: %w", openErr)
 	}
 	defer file.Close()
 
-	img, _, err := s.decoder.Decode(file)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %w", err)
+	img, _, decodeErr := s.decoder.Decode(file)
+	if decodeErr != nil {
+		return nil, fmt.Errorf("error decoding image: %w", decodeErr)
 	}
 
 	return &ProcessedImage{Original: img}, nil
@@ -78,16 +78,16 @@ type ProcessedImage struct {
 	Result   ProcessingResult
 }
 
-// processImage handles the core image processing logic.
-func (s *Service) processImage(procImg *ProcessedImage) *ProcessedImage {
+// ProcessImageData handles the core image processing logic.
+func (s *Service) ProcessImageData(procImg *ProcessedImage) *ProcessedImage {
 	procImg.Resized = ResizeImage(procImg.Original, s.config.TargetSize, s.resizer)
 	procImg.Squared = CropToSquare(procImg.Resized, s.config.TargetSize)
 	procImg.Result = SplitIntoTiles(procImg.Squared, s.config)
 	return procImg
 }
 
-// saveTiles saves all tiles to disk.
-func (s *Service) saveTiles(procImg *ProcessedImage, originalPath string) error {
+// SaveTiles saves all tiles to disk.
+func (s *Service) SaveTiles(procImg *ProcessedImage, originalPath string) error {
 	baseDir := filepath.Dir(originalPath)
 	fileName := strings.TrimSuffix(filepath.Base(originalPath), filepath.Ext(originalPath))
 
@@ -95,19 +95,19 @@ func (s *Service) saveTiles(procImg *ProcessedImage, originalPath string) error 
 		coord := procImg.Result.TileCoords[i]
 		outputPath := filepath.Join(baseDir, fmt.Sprintf("%s_%d.png", fileName, coord.Number))
 
-		if err := s.saveTile(tile, outputPath); err != nil {
-			return fmt.Errorf("error saving tile %d: %w", coord.Number, err)
+		if saveErr := s.SaveTile(tile, outputPath); saveErr != nil {
+			return fmt.Errorf("error saving tile %d: %w", coord.Number, saveErr)
 		}
 	}
 
 	return nil
 }
 
-// saveTile saves a single tile to disk.
-func (s *Service) saveTile(tile image.Image, outputPath string) error {
-	outputFile, err := s.fileSystem.Create(outputPath)
-	if err != nil {
-		return fmt.Errorf("error creating output file: %w", err)
+// SaveTile saves a single tile to disk.
+func (s *Service) SaveTile(tile image.Image, outputPath string) error {
+	outputFile, createErr := s.fileSystem.Create(outputPath)
+	if createErr != nil {
+		return fmt.Errorf("error creating output file: %w", createErr)
 	}
 	defer outputFile.Close()
 

@@ -5,15 +5,15 @@ import (
 	"io"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/processor"
 )
 
 func TestNewService(t *testing.T) {
 	service := processor.NewService()
-
-	if service == nil {
-		t.Fatal("Expected non-nil service")
-	}
+	assert.NotNil(t, service)
 }
 
 func TestNewServiceWithDeps(t *testing.T) {
@@ -24,10 +24,7 @@ func TestNewServiceWithDeps(t *testing.T) {
 	config := processor.DefaultConfig()
 
 	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
-
-	if service == nil {
-		t.Fatal("Expected non-nil service")
-	}
+	assert.NotNil(t, service)
 }
 
 func TestService_ProcessImage_Success(t *testing.T) {
@@ -45,9 +42,7 @@ func TestService_ProcessImage_Success(t *testing.T) {
 	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
 
 	err := service.ProcessImage("/test/image.jpg")
-	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
-	}
+	require.NoError(t, err)
 
 	// Verify that 9 tile files were created
 	expectedFiles := []string{
@@ -64,9 +59,7 @@ func TestService_ProcessImage_Success(t *testing.T) {
 
 	for _, filename := range expectedFiles {
 		_, exists := fs.GetWrittenFile(filename)
-		if !exists {
-			t.Errorf("Expected file %s to be created", filename)
-		}
+		assert.True(t, exists, "Expected file %s to be created", filename)
 	}
 }
 
@@ -85,14 +78,10 @@ func TestService_ProcessImage_FileOpenError(t *testing.T) {
 
 	err := service.ProcessImage("/nonexistent/image.jpg")
 
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
+	require.Error(t, err)
 
 	expectedMsg := "failed to load image"
-	if !contains(err.Error(), expectedMsg) {
-		t.Errorf("Expected error containing '%s', got: %v", expectedMsg, err)
-	}
+	assert.Contains(t, err.Error(), expectedMsg)
 }
 
 func TestService_ProcessImage_DecodeError(t *testing.T) {
@@ -108,14 +97,10 @@ func TestService_ProcessImage_DecodeError(t *testing.T) {
 
 	err := service.ProcessImage("/test/image.jpg")
 
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
+	require.Error(t, err)
 
 	expectedMsg := "failed to load image"
-	if !contains(err.Error(), expectedMsg) {
-		t.Errorf("Expected error containing '%s', got: %v", expectedMsg, err)
-	}
+	assert.Contains(t, err.Error(), expectedMsg)
 }
 
 func TestService_ProcessImage_EncodeError(t *testing.T) {
@@ -132,14 +117,10 @@ func TestService_ProcessImage_EncodeError(t *testing.T) {
 
 	err := service.ProcessImage("/test/image.jpg")
 
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
+	require.Error(t, err)
 
 	expectedMsg := "failed to save tiles"
-	if !contains(err.Error(), expectedMsg) {
-		t.Errorf("Expected error containing '%s', got: %v", expectedMsg, err)
-	}
+	assert.Contains(t, err.Error(), expectedMsg)
 }
 
 func TestService_ProcessImage_CreateFileError(t *testing.T) {
@@ -160,32 +141,12 @@ func TestService_ProcessImage_CreateFileError(t *testing.T) {
 
 	err := service.ProcessImage("/test/image.jpg")
 
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
+	require.Error(t, err)
 
 	expectedMsg := "failed to save tiles"
-	if !contains(err.Error(), expectedMsg) {
-		t.Errorf("Expected error containing '%s', got: %v", expectedMsg, err)
-	}
+	assert.Contains(t, err.Error(), expectedMsg)
 }
 
 // Skip testing loadImage since it's an internal method and covered by ProcessImage tests
 
 // Skip testing processImage since it's an internal method and covered by ProcessImage tests
-
-// Helper function to check if string contains substring.
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-			containsHelper(s, substr))))
-}
-
-func containsHelper(s, substr string) bool {
-	for i := 1; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
