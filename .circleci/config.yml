@@ -1,11 +1,9 @@
 version: 2.1
 
-executors:
-  linter-executor:
-    docker:
-      - image: golangci/golangci-lint:v2.1.6-alpine
-    resource_class: large
+orbs:
+  go: circleci/go@3.0.2
 
+executors:
   go-executor:
     docker:
       - image: cimg/go:1.24
@@ -18,12 +16,12 @@ executors:
 
 jobs:
   linting:
-    executor: linter-executor
+    executor: go-executor
     steps:
       - checkout
-      - go/load-cache
+      - go/load-mod-cache
       - go/mod-download
-      - go/save-cache
+      - go/save-mod-cache
       - run:
           name: Run tests
           command: |
@@ -38,9 +36,9 @@ jobs:
     executor: go-executor
     steps:
       - checkout
-      - go/load-cache
+      - go/load-mod-cache
       - go/mod-download
-      - go/save-cache
+      - go/save-mod-cache
       - run:
           name: Build binary
           command: |
@@ -50,9 +48,9 @@ jobs:
     executor: go-executor
     steps:
       - checkout
-      - go/load-cache
+      - go/load-mod-cache
       - go/mod-download
-      - go/save-cache
+      - go/save-mod-cache
       - run:
           name: Install GitHub CLI
           command: |
@@ -107,7 +105,7 @@ workflows:
               ignore: main
       - build:
           requires:
-            - test
+            - linting
           filters:
             branches:
               ignore: main
@@ -120,13 +118,13 @@ workflows:
               only: main
       - build:
           requires:
-            - test
+            - linting
           filters:
             branches:
               only: main
       - release:
           requires:
-            - test
+            - linting
             - build
           filters:
             branches:
