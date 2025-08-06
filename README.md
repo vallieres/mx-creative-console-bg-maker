@@ -46,6 +46,6 @@ go install github.com/vallieres/mx-creative-console-bg-maker/cmd/ccbm@latest
 ccbm <image_path>
 ```
 
-## License
+## 📝 License
 
 MIT

@@ -5,6 +5,9 @@ import (
 	"io"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/cli"
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/processor"
 )
@@ -28,18 +31,14 @@ func (m *MockProcessor) ProcessImage(imagePath string) error {
 func TestNewApp(t *testing.T) {
 	app := cli.NewApp()
 
-	if app == nil {
-		t.Fatal("Expected non-nil app")
-	}
+	assert.NotNil(t, app)
 }
 
 func TestNewAppWithProcessor(t *testing.T) {
 	customProcessor := processor.NewService()
 	app := cli.NewAppWithProcessor(customProcessor)
 
-	if app == nil {
-		t.Fatal("Expected non-nil app")
-	}
+	assert.NotNil(t, app)
 }
 
 func TestApp_Run_Success(t *testing.T) {
@@ -59,9 +58,7 @@ func TestApp_Run_Success(t *testing.T) {
 	fs.AddFile("/test/image.jpg", []byte("fake image"))
 
 	err := app.Run(args)
-	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func TestApp_Run_MissingArguments(t *testing.T) {
@@ -85,14 +82,8 @@ func TestApp_Run_MissingArguments(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := app.Run(tt.args)
 
-			if err == nil {
-				t.Fatal("Expected error for missing arguments, got nil")
-			}
-
-			expectedMsg := "usage:"
-			if !contains(err.Error(), expectedMsg) {
-				t.Errorf("Expected error containing '%s', got: %v", expectedMsg, err)
-			}
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "usage:")
 		})
 	}
 }
@@ -116,23 +107,5 @@ func TestApp_Run_ProcessorError(t *testing.T) {
 
 	err := app.Run(args)
 
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
-}
-
-// Helper function to check if string contains substring.
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-			containsHelper(s, substr))))
-}
-
-func containsHelper(s, substr string) bool {
-	for i := 1; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
+	require.Error(t, err)
 }

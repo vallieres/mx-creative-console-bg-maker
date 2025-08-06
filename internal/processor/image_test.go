@@ -4,6 +4,8 @@ import (
 	"image"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/processor"
 )
 
@@ -17,9 +19,7 @@ func TestDefaultConfig(t *testing.T) {
 		Spacing:    15,
 	}
 
-	if config != expectedConfig {
-		t.Errorf("Expected config %+v, got %+v", expectedConfig, config)
-	}
+	assert.Equal(t, expectedConfig, config)
 }
 
 func TestResizeImage(t *testing.T) {
@@ -72,19 +72,15 @@ func TestResizeImage(t *testing.T) {
 
 			// Verify the correct parameters were passed to the resizer
 			if tt.expectWidth {
-				if capturedWidth != 0 || capturedHeight != uint(tt.targetSize) {
-					t.Errorf("Expected resize(0, %d), got resize(%d, %d)", tt.targetSize, capturedWidth, capturedHeight)
-				}
+				assert.Equal(t, uint(0), capturedWidth, "Width should be 0 for landscape resize")
+				assert.Equal(t, uint(tt.targetSize), capturedHeight, "Height should be target size")
 			} else {
-				if capturedWidth != uint(tt.targetSize) || capturedHeight != 0 {
-					t.Errorf("Expected resize(%d, 0), got resize(%d, %d)", tt.targetSize, capturedWidth, capturedHeight)
-				}
+				assert.Equal(t, uint(tt.targetSize), capturedWidth, "Width should be target size")
+				assert.Equal(t, uint(0), capturedHeight, "Height should be 0 for portrait/square resize")
 			}
 
 			// Verify we got an image back
-			if result == nil {
-				t.Error("Expected non-nil result image")
-			}
+			assert.NotNil(t, result)
 		})
 	}
 }
@@ -116,17 +112,14 @@ func TestCropToSquare(t *testing.T) {
 
 			result := processor.CropToSquare(testImg, tt.targetSize)
 
-			if result == nil {
-				t.Fatal("Expected non-nil result image")
-			}
+			assert.NotNil(t, result)
 
 			bounds := result.Bounds()
 			width := bounds.Max.X - bounds.Min.X
 			height := bounds.Max.Y - bounds.Min.Y
 
-			if width != tt.targetSize || height != tt.targetSize {
-				t.Errorf("Expected %dx%d image, got %dx%d", tt.targetSize, tt.targetSize, width, height)
-			}
+			assert.Equal(t, tt.targetSize, width)
+			assert.Equal(t, tt.targetSize, height)
 		})
 	}
 }
@@ -145,13 +138,8 @@ func TestSplitIntoTiles(t *testing.T) {
 	result := processor.SplitIntoTiles(testImg, config)
 
 	expectedTileCount := config.GridSize * config.GridSize
-	if len(result.Tiles) != expectedTileCount {
-		t.Errorf("Expected %d tiles, got %d", expectedTileCount, len(result.Tiles))
-	}
-
-	if len(result.TileCoords) != expectedTileCount {
-		t.Errorf("Expected %d tile coordinates, got %d", expectedTileCount, len(result.TileCoords))
-	}
+	assert.Len(t, result.Tiles, expectedTileCount)
+	assert.Len(t, result.TileCoords, expectedTileCount)
 
 	// Verify each tile has correct dimensions
 	for i, tile := range result.Tiles {
@@ -159,9 +147,8 @@ func TestSplitIntoTiles(t *testing.T) {
 		width := bounds.Max.X - bounds.Min.X
 		height := bounds.Max.Y - bounds.Min.Y
 
-		if width != config.TileSize || height != config.TileSize {
-			t.Errorf("Tile %d: expected %dx%d, got %dx%d", i, config.TileSize, config.TileSize, width, height)
-		}
+		assert.Equal(t, config.TileSize, width, "Tile %d width incorrect", i)
+		assert.Equal(t, config.TileSize, height, "Tile %d height incorrect", i)
 	}
 
 	// Verify tile coordinates are correct
@@ -177,9 +164,5 @@ func TestSplitIntoTiles(t *testing.T) {
 		{Row: 2, Col: 2, Number: 9},
 	}
 
-	for i, coord := range result.TileCoords {
-		if coord != expectedCoords[i] {
-			t.Errorf("Tile %d: expected coordinate %+v, got %+v", i, expectedCoords[i], coord)
-		}
-	}
+	assert.Equal(t, expectedCoords, result.TileCoords)
 }
