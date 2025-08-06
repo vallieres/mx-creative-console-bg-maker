@@ -188,4 +188,4 @@ workflows:
         - build
         filters:
           branches:
-            only: main
+            only: fix-release
