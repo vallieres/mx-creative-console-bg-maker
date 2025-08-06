@@ -1,12 +1,24 @@
 version: 2.1
 
-orbs:
-  go: circleci/go@1.10.0
+executors:
+  linter-executor:
+    docker:
+      - image: golangci/golangci-lint:v2.1.6-alpine
+    resource_class: large
 
-jobs:
-  test:
+  go-executor:
     docker:
       - image: cimg/go:1.24
+    resource_class: large
+
+  semgrep-executor:
+    docker:
+      - image: semgrep/semgrep:1.131.0-nonroot
+    resource_class: large
+
+jobs:
+  linting:
+    executor: linter-executor
     steps:
       - checkout
       - go/load-cache
@@ -23,8 +35,7 @@ jobs:
             golangci-lint run
 
   build:
-    docker:
-      - image: cimg/go:1.24
+    executor: go-executor
     steps:
       - checkout
       - go/load-cache
@@ -36,8 +47,7 @@ jobs:
             go build -v ./cmd/ccbm
 
   release:
-    docker:
-      - image: cimg/go:1.24
+    executor: go-executor
     steps:
       - checkout
       - go/load-cache
@@ -91,7 +101,7 @@ workflows:
   version: 2
   test-and-build:
     jobs:
-      - test:
+      - linting:
           filters:
             branches:
               ignore: main
@@ -104,7 +114,7 @@ workflows:
 
   release-on-main:
     jobs:
-      - test:
+      - linting:
           filters:
             branches:
               only: main
