@@ -43,7 +43,7 @@ repos:
       - id: go-imports
         name: 'run goimports'
         description: "Run go mod tidy on go.mod"
-        entry: goimports -local github.com/vallieres/mx-creative-console-ccbm -w .
+        entry: goimports -local github.com/vallieres/mx-creative-console-bg-maker -w .
         language: golang
         pass_filenames: false
         stages: [pre-commit]
@@ -57,14 +57,14 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.43.0
+    rev: v0.45.0
     hooks:
       - id: markdownlint
         exclude: ^.github/
         stages: [pre-commit]
 
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.28.0
     hooks:
       - id: gitleaks
         name: detect hardcoded secrets

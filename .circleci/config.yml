@@ -1,0 +1,123 @@
+version: 2.1
+
+orbs:
+  go: circleci/go@1.10.0
+
+jobs:
+  test:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - checkout
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
+      - run:
+          name: Run tests
+          command: |
+            go test -v ./...
+      - run:
+          name: Run linting
+          command: |
+            go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+            golangci-lint run
+
+  build:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - checkout
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
+      - run:
+          name: Build binary
+          command: |
+            go build -v ./cmd/ccbm
+
+  release:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - checkout
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh
+      - run:
+          name: Create and push release
+          command: |
+            # Get the latest commit message as release notes
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            
+            # Generate a version tag based on timestamp
+            VERSION="v$(date +%Y.%m.%d-%H%M%S)"
+            
+            # Create git tag
+            git tag $VERSION
+            git push origin $VERSION
+            
+            # Build binaries for multiple platforms
+            mkdir -p dist
+            
+            # Build for Linux amd64
+            GOOS=linux GOARCH=amd64 go build -o dist/ccbm-linux-amd64 ./cmd/ccbm
+            
+            # Build for macOS amd64
+            GOOS=darwin GOARCH=amd64 go build -o dist/ccbm-darwin-amd64 ./cmd/ccbm
+            
+            # Build for macOS arm64
+            GOOS=darwin GOARCH=arm64 go build -o dist/ccbm-darwin-arm64 ./cmd/ccbm
+            
+            # Build for Windows amd64
+            GOOS=windows GOARCH=amd64 go build -o dist/ccbm-windows-amd64.exe ./cmd/ccbm
+            
+            # Create GitHub release with binaries
+            gh release create $VERSION \
+              --title "Release $VERSION" \
+              --notes "$COMMIT_MSG" \
+              dist/ccbm-linux-amd64 \
+              dist/ccbm-darwin-amd64 \
+              dist/ccbm-darwin-arm64 \
+              dist/ccbm-windows-amd64.exe
+
+workflows:
+  version: 2
+  test-and-build:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: main
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: main
+
+  release-on-main:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: main
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
+      - release:
+          requires:
+            - test
+            - build
+          filters:
+            branches:
+              only: main
