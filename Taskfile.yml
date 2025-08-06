@@ -4,37 +4,38 @@ tasks:
   default:
     desc: List all available tasks
     cmds:
-      - task --list
+    - task --list
 
   install-pre-commit:
     desc: "Install pre-commit hooks"
     cmds:
-      - pre-commit install
-      - pre-commit install --hook-type pre-push
+    - pre-commit install
+    - pre-commit install --hook-type pre-push
 
   pre-commit:
     desc: "Run pre-commit hooks on all files"
     cmds:
-      - pre-commit run --all-files
+    - pre-commit run --all-files
 
   format:
     desc: Run 'goimports' to format go imports
     summary: Runs goimports on all files with -local support, can also replace gofmt
     cmds:
-      - goimports -local github.com/vallieres/mx-creative-console-bg-maker -w .
-      - go mod tidy
-      - gofumpt -l -w .
-      - shfmt -w .
-      - mdformat --wrap 80 .
+    - goimports -local github.com/vallieres/mx-creative-console-bg-maker -w .
+    - go mod tidy
+    - gofumpt -l -w .
+    - shfmt -w .
+    - mdformat --wrap 80 .
+    - yamlfmt .
 
   lint:
     desc: Code Linting
     summary: Lint the project files with golangci-lint
     cmds:
-      - golangci-lint run -c .golangci.yml --fix
+    - golangci-lint run -c .golangci.yml --fix
 
   test:
     desc: Run the tests
     summary: Runs the tests
     cmds:
-      - gotestsum ./...
+    - gotestsum ./...
