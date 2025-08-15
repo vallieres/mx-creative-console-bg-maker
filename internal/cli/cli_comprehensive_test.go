@@ -210,14 +210,14 @@ func TestApp_Run_RelativePath(t *testing.T) {
 func TestApp_Run_CustomProgramName(t *testing.T) {
 	// Setup
 	app := cli.NewApp()
-	args := []string{"my-custom-program"}
+	args := []string{"ccbm"}
 
 	// Execute
 	runErr := app.Run(args)
 
 	// Assert
 	require.Error(t, runErr)
-	assert.Contains(t, runErr.Error(), "usage: my-custom-program <image_path>")
+	assert.Contains(t, runErr.Error(), "usage: ccbm <image_path>")
 }
 
 func TestApp_Run_ArgumentsWithExtraSpaces(t *testing.T) {
