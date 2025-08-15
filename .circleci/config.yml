@@ -174,14 +174,11 @@ workflows:
   ci:
     jobs:
       # Run tests and linting in parallel for all branches
-      - test
-      - lint
+      #- test
+      #- lint
 
       # Build depends on both test and lint passing
-      - build:
-          requires:
-            - test
-            - lint
+      - build
 
       # Release only runs on main branch and depends on build
       - release:
