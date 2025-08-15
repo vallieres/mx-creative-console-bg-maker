@@ -1,3 +1,4 @@
+---
 version: '3'
 
 tasks:
@@ -26,6 +27,7 @@ tasks:
       - gofumpt -l -w .
       - shfmt -w .
       - mdformat --wrap 80 .
+      - yamlfmt .
 
   lint:
     desc: Code Linting

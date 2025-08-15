@@ -1,25 +1,26 @@
+---
 
 repos:
-  -   repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v5.0.0
-      hooks:
-        -   id: trailing-whitespace
-            stages: [pre-commit]
-            exclude: ^assets/
-        -   id: end-of-file-fixer
-            stages: [pre-commit]
-            exclude: ^assets/
-        -   id: mixed-line-ending
-            stages: [pre-commit]
-            exclude: ^assets/
-        -   id: check-added-large-files
-            stages: [pre-commit]
-        -   id: check-case-conflict
-            stages: [pre-commit]
-        -   id: check-merge-conflict
-            stages: [pre-commit]
-        -   id: check-yaml
-            stages: [pre-commit]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: mixed-line-ending
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: check-added-large-files
+        stages: [pre-commit]
+      - id: check-case-conflict
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        stages: [pre-commit]
+      - id: check-yaml
+        stages: [pre-commit]
 
   - repo: local
     hooks:
@@ -27,7 +28,7 @@ repos:
         name: 'run golangci-lint'
         description: "Run golangci-lint for Go stuff"
         entry: golangci-lint run -c .golangci.yml --fix
-        types: [ go ]
+        types: [go]
         language: golang
         pass_filenames: false
         stages: [pre-commit]
