@@ -126,7 +126,7 @@ jobs:
             # Build for Windows amd64
             echo "Building for Windows amd64..."
             GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-windows-amd64.exe ./cmd/ccbm
-            # Verify all binaries were created
+            # Verify all binaries were created and generate checksums
             for binary in dist/ccbm-*; do
               if [ ! -f "$binary" ]; then
                 echo "Error: Failed to create $binary"
@@ -134,28 +134,44 @@ jobs:
               fi
               echo "✓ Created $binary ($(stat -c%s "$binary" 2>/dev/null || stat -f%z "$binary") bytes)"
             done
+
+            # Generate SHA256 checksums
+            echo "Generating SHA256 checksums..."
+            cd dist
+            for binary in ccbm-*; do
+              sha256sum "$binary" > "$binary.sha256"
+              echo "✓ Generated checksum for $binary"
+            done
+            cd ..
       - run:
           name: Create GitHub release
           command: |
             # Get the latest commit message as release notes
             COMMIT_MSG=$(git log -1 --pretty=%B)
 
-            # Create GitHub release
-            echo "Creating release: ${VERSION}"
+            # Create GitHub release with binaries and checksums (this will create the tag automatically)
             gh release create "$VERSION" \
               --title "Release $VERSION" \
               --notes "$COMMIT_MSG" \
               dist/ccbm-linux-amd64 \
+              dist/ccbm-linux-amd64.sha256 \
               dist/ccbm-darwin-amd64 \
+              dist/ccbm-darwin-amd64.sha256 \
               dist/ccbm-darwin-arm64 \
-              dist/ccbm-windows-amd64.exe || {
+              dist/ccbm-darwin-arm64.sha256 \
+              dist/ccbm-windows-amd64.exe \
+              dist/ccbm-windows-amd64.exe.sha256 || {
               echo "Release creation failed. This might be because the release already exists."
               echo "Attempting to upload artifacts to existing release..."
-              gh release upload "$VERSION" \
+              gh release upload $VERSION \
                 dist/ccbm-linux-amd64 \
+                dist/ccbm-linux-amd64.sha256 \
                 dist/ccbm-darwin-amd64 \
+                dist/ccbm-darwin-amd64.sha256 \
                 dist/ccbm-darwin-arm64 \
-                dist/ccbm-windows-amd64.exe --clobber
+                dist/ccbm-darwin-arm64.sha256 \
+                dist/ccbm-windows-amd64.exe \
+                dist/ccbm-windows-amd64.exe.sha256 --clobber
             }
       - store_artifacts:
           path: dist/
