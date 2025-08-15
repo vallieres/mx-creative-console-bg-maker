@@ -102,12 +102,10 @@ jobs:
               LATEST_TAG=$(echo "$YEAR_TAGS" | head -n1)
               PATCH_VERSION=$(echo "$LATEST_TAG" | cut -d'.' -f2)
               NEXT_PATCH=$((PATCH_VERSION + 1))
-              SHORT_SHA=$(git rev-parse --short HEAD)
-              VERSION="${CURRENT_YEAR}.${NEXT_PATCH}-g${SHORT_SHA}"
+              VERSION="${CURRENT_YEAR}.${NEXT_PATCH}"
             else
               # No year tags exist, start with 2025.1
-              SHORT_SHA=$(git rev-parse --short HEAD)
-              VERSION="${CURRENT_YEAR}.1-g${SHORT_SHA}"
+              VERSION="${CURRENT_YEAR}.1"
             fi
             echo "export VERSION=${VERSION}" >> $BASH_ENV
       - run:
@@ -145,26 +143,40 @@ jobs:
             # Check if this is already a tagged commit
             if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
               echo "Creating release for existing tag: ${VERSION}"
-              RELEASE_FLAGS="--title \"Release $VERSION\" --notes \"$COMMIT_MSG\""
-            else
-              echo "Creating pre-release for commit: ${VERSION}"
-              RELEASE_FLAGS="--title \"Pre-release $VERSION\" --notes \"$COMMIT_MSG\" --prerelease"
-            fi
-
-            # Create GitHub release with binaries (this will create the tag automatically)
-            gh release create "$VERSION" $RELEASE_FLAGS \
-              dist/ccbm-linux-amd64 \
-              dist/ccbm-darwin-amd64 \
-              dist/ccbm-darwin-arm64 \
-              dist/ccbm-windows-amd64.exe || {
-              echo "Release creation failed. This might be because the release already exists."
-              echo "Attempting to upload artifacts to existing release..."
-              gh release upload "$VERSION" \
+              gh release create "$VERSION" \
+                --title "Release $VERSION" \
+                --notes "$COMMIT_MSG" \
                 dist/ccbm-linux-amd64 \
                 dist/ccbm-darwin-amd64 \
                 dist/ccbm-darwin-arm64 \
-                dist/ccbm-windows-amd64.exe --clobber
-            }
+                dist/ccbm-windows-amd64.exe || {
+                echo "Release creation failed. This might be because the release already exists."
+                echo "Attempting to upload artifacts to existing release..."
+                gh release upload "$VERSION" \
+                  dist/ccbm-linux-amd64 \
+                  dist/ccbm-darwin-amd64 \
+                  dist/ccbm-darwin-arm64 \
+                  dist/ccbm-windows-amd64.exe --clobber
+              }
+            else
+              echo "Creating pre-release for commit: ${VERSION}"
+              gh release create "$VERSION" \
+                --title "Pre-release $VERSION" \
+                --notes "$COMMIT_MSG" \
+                --prerelease \
+                dist/ccbm-linux-amd64 \
+                dist/ccbm-darwin-amd64 \
+                dist/ccbm-darwin-arm64 \
+                dist/ccbm-windows-amd64.exe || {
+                echo "Release creation failed. This might be because the release already exists."
+                echo "Attempting to upload artifacts to existing release..."
+                gh release upload "$VERSION" \
+                  dist/ccbm-linux-amd64 \
+                  dist/ccbm-darwin-amd64 \
+                  dist/ccbm-darwin-arm64 \
+                  dist/ccbm-windows-amd64.exe --clobber
+              }
+            fi
       - store_artifacts:
           path: dist/
           destination: binaries
@@ -182,8 +194,6 @@ workflows:
 
       # Release only runs on main branch and depends on build
       - release:
-          requires:
-            - build
           filters:
             branches:
               only: test-release
