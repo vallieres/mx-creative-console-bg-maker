@@ -152,14 +152,14 @@ jobs:
             fi
 
             # Create GitHub release with binaries (this will create the tag automatically)
-            gh release create $VERSION $RELEASE_FLAGS \
+            gh release create "$VERSION" $RELEASE_FLAGS \
               dist/ccbm-linux-amd64 \
               dist/ccbm-darwin-amd64 \
               dist/ccbm-darwin-arm64 \
               dist/ccbm-windows-amd64.exe || {
               echo "Release creation failed. This might be because the release already exists."
               echo "Attempting to upload artifacts to existing release..."
-              gh release upload $VERSION \
+              gh release upload "$VERSION" \
                 dist/ccbm-linux-amd64 \
                 dist/ccbm-darwin-amd64 \
                 dist/ccbm-darwin-arm64 \
