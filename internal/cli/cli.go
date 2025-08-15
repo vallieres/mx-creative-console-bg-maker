@@ -30,11 +30,14 @@ const minRequiredArgs = 2
 
 // Run executes the CLI application.
 func (a *App) Run(args []string) error {
+	progName := "ccbm"
+
+	if len(args) >= 2 && (args[1] == "--help" || args[1] == "-h") {
+		_, _ = fmt.Fprintf(os.Stdout, "Usage: ccbm <image_path>\n")
+		return nil
+	}
+
 	if len(args) < minRequiredArgs {
-		progName := "ccbm"
-		if len(args) > 0 {
-			progName = args[0]
-		}
 		return fmt.Errorf("usage: %s <image_path>", progName)
 	}
 
