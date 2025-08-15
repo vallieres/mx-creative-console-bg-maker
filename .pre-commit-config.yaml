@@ -1,75 +1,76 @@
+---
 
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
-  hooks:
-  - id: trailing-whitespace
-    stages: [pre-commit]
-    exclude: ^assets/
-  - id: end-of-file-fixer
-    stages: [pre-commit]
-    exclude: ^assets/
-  - id: mixed-line-ending
-    stages: [pre-commit]
-    exclude: ^assets/
-  - id: check-added-large-files
-    stages: [pre-commit]
-  - id: check-case-conflict
-    stages: [pre-commit]
-  - id: check-merge-conflict
-    stages: [pre-commit]
-  - id: check-yaml
-    stages: [pre-commit]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: mixed-line-ending
+        stages: [pre-commit]
+        exclude: ^assets/
+      - id: check-added-large-files
+        stages: [pre-commit]
+      - id: check-case-conflict
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        stages: [pre-commit]
+      - id: check-yaml
+        stages: [pre-commit]
 
-- repo: local
-  hooks:
-  - id: golangci-lint
-    name: 'run golangci-lint'
-    description: "Run golangci-lint for Go stuff"
-    entry: golangci-lint run -c .golangci.yml --fix
-    types: [go]
-    language: golang
-    pass_filenames: false
-    stages: [pre-commit]
+  - repo: local
+    hooks:
+      - id: golangci-lint
+        name: 'run golangci-lint'
+        description: "Run golangci-lint for Go stuff"
+        entry: golangci-lint run -c .golangci.yml --fix
+        types: [go]
+        language: golang
+        pass_filenames: false
+        stages: [pre-commit]
 
-  - id: go-mod-tidy
-    name: 'run go mod tidy'
-    description: "Run go mod tidy on go.mod"
-    entry: go mod tidy -v
-    language: golang
-    pass_filenames: false
-    stages: [pre-push]
+      - id: go-mod-tidy
+        name: 'run go mod tidy'
+        description: "Run go mod tidy on go.mod"
+        entry: go mod tidy -v
+        language: golang
+        pass_filenames: false
+        stages: [pre-push]
 
-  - id: go-imports
-    name: 'run goimports'
-    description: "Run go mod tidy on go.mod"
-    entry: goimports -local github.com/vallieres/mx-creative-console-bg-maker -w .
-    language: golang
-    pass_filenames: false
-    stages: [pre-commit]
+      - id: go-imports
+        name: 'run goimports'
+        description: "Run go mod tidy on go.mod"
+        entry: goimports -local github.com/vallieres/mx-creative-console-bg-maker -w .
+        language: golang
+        pass_filenames: false
+        stages: [pre-commit]
 
-  - id: go-unit-test
-    name: 'run go unit tests'
-    description: "Run go test"
-    entry: bash -c "task test"
-    language: golang
-    pass_filenames: false
-    stages: [pre-push]
+      - id: go-unit-test
+        name: 'run go unit tests'
+        description: "Run go test"
+        entry: bash -c "task test"
+        language: golang
+        pass_filenames: false
+        stages: [pre-push]
 
-- repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.45.0
-  hooks:
-  - id: markdownlint
-    exclude: ^.github/
-    stages: [pre-commit]
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        exclude: ^.github/
+        stages: [pre-commit]
 
-- repo: https://github.com/gitleaks/gitleaks
-  rev: v8.28.0
-  hooks:
-  - id: gitleaks
-    name: detect hardcoded secrets
-    description: Detect hardcoded secrets using Gitleaks
-    entry: gitleaks protect --verbose --redact --staged
-    language: golang
-    pass_filenames: false
-    stages: [pre-commit]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+        name: detect hardcoded secrets
+        description: Detect hardcoded secrets using Gitleaks
+        entry: gitleaks protect --verbose --redact --staged
+        language: golang
+        pass_filenames: false
+        stages: [pre-commit]

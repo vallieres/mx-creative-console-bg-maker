@@ -1,3 +1,4 @@
+---
 version: 2.1
 
 orbs:
@@ -7,185 +8,185 @@ orbs:
 executors:
   go-executor:
     docker:
-    - image: cimg/go:1.24
+      - image: cimg/go:1.24
     resource_class: medium
 
   go-executor-large:
     docker:
-    - image: cimg/go:1.24
+      - image: cimg/go:1.24
     resource_class: large
 
   semgrep-executor:
     docker:
-    - image: semgrep/semgrep:1.131.0-nonroot
+      - image: semgrep/semgrep:1.131.0-nonroot
     resource_class: medium
 
 jobs:
   test:
     executor: go-executor
     steps:
-    - checkout
-    - go/load-mod-cache
-    - go/mod-download
-    - go/save-mod-cache
-    - run:
-        name: Run tests
-        command: |
-          go test -v ./...
+      - checkout
+      - go/load-mod-cache
+      - go/mod-download
+      - go/save-mod-cache
+      - run:
+          name: Run tests
+          command: |
+            go test -v ./...
 
   lint:
     executor: go-executor
     steps:
-    - checkout
-    - go/load-mod-cache
-    - go/mod-download
-    - go/save-mod-cache
-    - restore_cache:
-        keys:
-        - golangci-lint-v2.1.6-{{ arch }}
-    - run:
-        name: Install golangci-lint
-        command: |
-          if [ ! -f ~/bin/golangci-lint ]; then
-            mkdir -p ~/bin
-            go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
-            cp $(go env GOPATH)/bin/golangci-lint ~/bin/
-          fi
-    - save_cache:
-        key: golangci-lint-v2.1.6-{{ arch }}
-        paths:
-        - ~/bin/golangci-lint
-    - run:
-        name: Run linting
-        command: |
-          export PATH=~/bin:$PATH
-          golangci-lint run
+      - checkout
+      - go/load-mod-cache
+      - go/mod-download
+      - go/save-mod-cache
+      - restore_cache:
+          keys:
+            - golangci-lint-v2.1.6-{{ arch }}
+      - run:
+          name: Install golangci-lint
+          command: |
+            if [ ! -f ~/bin/golangci-lint ]; then
+              mkdir -p ~/bin
+              go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
+              cp $(go env GOPATH)/bin/golangci-lint ~/bin/
+            fi
+      - save_cache:
+          key: golangci-lint-v2.1.6-{{ arch }}
+          paths:
+            - ~/bin/golangci-lint
+      - run:
+          name: Run linting
+          command: |
+            export PATH=~/bin:$PATH
+            golangci-lint run
 
   build:
     executor: go-executor
     steps:
-    - checkout
-    - go/load-mod-cache
-    - go/mod-download
-    - go/save-mod-cache
-    - run:
-        name: Build binary
-        command: |
-          go build -v ./cmd/ccbm
-    - persist_to_workspace:
-        root: .
-        paths:
-        - ccbm
+      - checkout
+      - go/load-mod-cache
+      - go/mod-download
+      - go/save-mod-cache
+      - run:
+          name: Build binary
+          command: |
+            go build -v ./cmd/ccbm
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ccbm
 
   release:
     executor: go-executor-large
     steps:
-    - checkout
-    - attach_workspace:
-        at: .
-    - go/load-mod-cache
-    - go/mod-download
-    - go/save-mod-cache
-    - github-cli/install
-    - run:
-        name: Determine version
-        command: |
-          CURRENT_YEAR=$(date +%Y)
-          # Get the latest year-based tag for this year
-          YEAR_TAGS=$(git tag -l "${CURRENT_YEAR}.*" --sort=-version:refname 2>/dev/null || echo "")
-          if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
-            # If current commit has a tag, use it
-            VERSION=$(git describe --tags --exact-match HEAD)
-          elif [ -n "$YEAR_TAGS" ]; then
-            # If there are existing year tags, increment the latest one
-            LATEST_TAG=$(echo "$YEAR_TAGS" | head -n1)
-            PATCH_VERSION=$(echo "$LATEST_TAG" | cut -d'.' -f2)
-            NEXT_PATCH=$((PATCH_VERSION + 1))
-            SHORT_SHA=$(git rev-parse --short HEAD)
-            VERSION="${CURRENT_YEAR}.${NEXT_PATCH}-g${SHORT_SHA}"
-          else
-            # No year tags exist, start with 2025.1
-            SHORT_SHA=$(git rev-parse --short HEAD)
-            VERSION="${CURRENT_YEAR}.1-g${SHORT_SHA}"
-          fi
-          echo "export VERSION=${VERSION}" >> $BASH_ENV
-    - run:
-        name: Build multi-platform binaries
-        command: |
-          set -e
-          mkdir -p dist
-          echo "Building binaries..."
-          # Build for Linux amd64
-          echo "Building for Linux amd64..."
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-linux-amd64 ./cmd/ccbm
-          # Build for macOS amd64
-          echo "Building for macOS amd64..."
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-amd64 ./cmd/ccbm
-          # Build for macOS arm64
-          echo "Building for macOS arm64..."
-          GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-arm64 ./cmd/ccbm
-          # Build for Windows amd64
-          echo "Building for Windows amd64..."
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-windows-amd64.exe ./cmd/ccbm
-          # Verify all binaries were created
-          for binary in dist/ccbm-*; do
-            if [ ! -f "$binary" ]; then
-              echo "Error: Failed to create $binary"
-              exit 1
+      - checkout
+      - attach_workspace:
+          at: .
+      - go/load-mod-cache
+      - go/mod-download
+      - go/save-mod-cache
+      - github-cli/install
+      - run:
+          name: Determine version
+          command: |
+            CURRENT_YEAR=$(date +%Y)
+            # Get the latest year-based tag for this year
+            YEAR_TAGS=$(git tag -l "${CURRENT_YEAR}.*" --sort=-version:refname 2>/dev/null || echo "")
+            if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
+              # If current commit has a tag, use it
+              VERSION=$(git describe --tags --exact-match HEAD)
+            elif [ -n "$YEAR_TAGS" ]; then
+              # If there are existing year tags, increment the latest one
+              LATEST_TAG=$(echo "$YEAR_TAGS" | head -n1)
+              PATCH_VERSION=$(echo "$LATEST_TAG" | cut -d'.' -f2)
+              NEXT_PATCH=$((PATCH_VERSION + 1))
+              SHORT_SHA=$(git rev-parse --short HEAD)
+              VERSION="${CURRENT_YEAR}.${NEXT_PATCH}-g${SHORT_SHA}"
+            else
+              # No year tags exist, start with 2025.1
+              SHORT_SHA=$(git rev-parse --short HEAD)
+              VERSION="${CURRENT_YEAR}.1-g${SHORT_SHA}"
             fi
-            echo "✓ Created $binary ($(stat -c%s "$binary" 2>/dev/null || stat -f%z "$binary") bytes)"
-          done
-    - run:
-        name: Create GitHub release
-        command: |
-          # Get the latest commit message as release notes
-          COMMIT_MSG=$(git log -1 --pretty=%B)
+            echo "export VERSION=${VERSION}" >> $BASH_ENV
+      - run:
+          name: Build multi-platform binaries
+          command: |
+            set -e
+            mkdir -p dist
+            echo "Building binaries..."
+            # Build for Linux amd64
+            echo "Building for Linux amd64..."
+            GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-linux-amd64 ./cmd/ccbm
+            # Build for macOS amd64
+            echo "Building for macOS amd64..."
+            GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-amd64 ./cmd/ccbm
+            # Build for macOS arm64
+            echo "Building for macOS arm64..."
+            GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-arm64 ./cmd/ccbm
+            # Build for Windows amd64
+            echo "Building for Windows amd64..."
+            GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-windows-amd64.exe ./cmd/ccbm
+            # Verify all binaries were created
+            for binary in dist/ccbm-*; do
+              if [ ! -f "$binary" ]; then
+                echo "Error: Failed to create $binary"
+                exit 1
+              fi
+              echo "✓ Created $binary ($(stat -c%s "$binary" 2>/dev/null || stat -f%z "$binary") bytes)"
+            done
+      - run:
+          name: Create GitHub release
+          command: |
+            # Get the latest commit message as release notes
+            COMMIT_MSG=$(git log -1 --pretty=%B)
 
-          # Check if this is already a tagged commit
-          if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
-            echo "Creating release for existing tag: ${VERSION}"
-            RELEASE_FLAGS="--title \"Release $VERSION\" --notes \"$COMMIT_MSG\""
-          else
-            echo "Creating pre-release for commit: ${VERSION}"
-            RELEASE_FLAGS="--title \"Pre-release $VERSION\" --notes \"$COMMIT_MSG\" --prerelease"
-          fi
+            # Check if this is already a tagged commit
+            if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
+              echo "Creating release for existing tag: ${VERSION}"
+              RELEASE_FLAGS="--title \"Release $VERSION\" --notes \"$COMMIT_MSG\""
+            else
+              echo "Creating pre-release for commit: ${VERSION}"
+              RELEASE_FLAGS="--title \"Pre-release $VERSION\" --notes \"$COMMIT_MSG\" --prerelease"
+            fi
 
-          # Create GitHub release with binaries (this will create the tag automatically)
-          gh release create $VERSION $RELEASE_FLAGS \
-            dist/ccbm-linux-amd64 \
-            dist/ccbm-darwin-amd64 \
-            dist/ccbm-darwin-arm64 \
-            dist/ccbm-windows-amd64.exe || {
-            echo "Release creation failed. This might be because the release already exists."
-            echo "Attempting to upload artifacts to existing release..."
-            gh release upload $VERSION \
+            # Create GitHub release with binaries (this will create the tag automatically)
+            gh release create $VERSION $RELEASE_FLAGS \
               dist/ccbm-linux-amd64 \
               dist/ccbm-darwin-amd64 \
               dist/ccbm-darwin-arm64 \
-              dist/ccbm-windows-amd64.exe --clobber
-          }
-    - store_artifacts:
-        path: dist/
-        destination: binaries
+              dist/ccbm-windows-amd64.exe || {
+              echo "Release creation failed. This might be because the release already exists."
+              echo "Attempting to upload artifacts to existing release..."
+              gh release upload $VERSION \
+                dist/ccbm-linux-amd64 \
+                dist/ccbm-darwin-amd64 \
+                dist/ccbm-darwin-arm64 \
+                dist/ccbm-windows-amd64.exe --clobber
+            }
+      - store_artifacts:
+          path: dist/
+          destination: binaries
 
 workflows:
   version: 2
   ci:
     jobs:
-    # Run tests and linting in parallel for all branches
-    - test
-    - lint
+      # Run tests and linting in parallel for all branches
+      - test
+      - lint
 
-    # Build depends on both test and lint passing
-    - build:
-        requires:
-        - test
-        - lint
+      # Build depends on both test and lint passing
+      - build:
+          requires:
+            - test
+            - lint
 
-    # Release only runs on main branch and depends on build
-    - release:
-        requires:
-        - build
-        filters:
-          branches:
-            only: fix-release
+      # Release only runs on main branch and depends on build
+      - release:
+          requires:
+            - build
+          filters:
+            branches:
+              only: fix-release

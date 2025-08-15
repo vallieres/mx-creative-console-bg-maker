@@ -1,17 +1,18 @@
+---
 version: 2
 
 updates:
-- package-ecosystem: gomod
-  directory: /
-  allow:
-  - dependency-type: all
-  open-pull-requests-limit: 5
-  target-branch: main
-  schedule:
-    interval: daily
-    time: "04:00"  # UTC
-  groups:
-    go-patch-updates:
-      update-types:
-      - "patch"
-      - "minor"
+  - package-ecosystem: gomod
+    directory: /
+    allow:
+      - dependency-type: all
+    open-pull-requests-limit: 5
+    target-branch: main
+    schedule:
+      interval: daily
+      time: "04:00" # UTC
+    groups:
+      go-patch-updates:
+        update-types:
+          - "patch"
+          - "minor"
