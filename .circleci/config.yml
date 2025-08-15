@@ -150,7 +150,9 @@ jobs:
             COMMIT_MSG=$(git log -1 --pretty=%B)
 
             # Create GitHub release with binaries and checksums (this will create the tag automatically)
-            gh release create $VERSION $RELEASE_FLAGS \
+            gh release create "$VERSION" \
+              --title "Release $VERSION" \
+              --notes "$COMMIT_MSG" \
               dist/ccbm-linux-amd64 \
               dist/ccbm-linux-amd64.sha256 \
               dist/ccbm-darwin-amd64 \
