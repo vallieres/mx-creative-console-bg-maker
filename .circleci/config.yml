@@ -1,3 +1,4 @@
+---
 version: 2.1
 
 orbs:
@@ -90,13 +91,23 @@ jobs:
       - run:
           name: Determine version
           command: |
+            CURRENT_YEAR=$(date +%Y)
+            # Get the latest year-based tag for this year
+            YEAR_TAGS=$(git tag -l "${CURRENT_YEAR}.*" --sort=-version:refname 2>/dev/null || echo "")
             if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
+              # If current commit has a tag, use it
               VERSION=$(git describe --tags --exact-match HEAD)
-            else
-              LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-              COMMITS_SINCE_TAG=$(git rev-list --count ${LAST_TAG}..HEAD 2>/dev/null || echo "1")
+            elif [ -n "$YEAR_TAGS" ]; then
+              # If there are existing year tags, increment the latest one
+              LATEST_TAG=$(echo "$YEAR_TAGS" | head -n1)
+              PATCH_VERSION=$(echo "$LATEST_TAG" | cut -d'.' -f2)
+              NEXT_PATCH=$((PATCH_VERSION + 1))
               SHORT_SHA=$(git rev-parse --short HEAD)
-              VERSION="${LAST_TAG}-${COMMITS_SINCE_TAG}-g${SHORT_SHA}"
+              VERSION="${CURRENT_YEAR}.${NEXT_PATCH}-g${SHORT_SHA}"
+            else
+              # No year tags exist, start with 2025.1
+              SHORT_SHA=$(git rev-parse --short HEAD)
+              VERSION="${CURRENT_YEAR}.1-g${SHORT_SHA}"
             fi
             echo "export VERSION=${VERSION}" >> $BASH_ENV
       - run:
@@ -104,25 +115,19 @@ jobs:
           command: |
             set -e
             mkdir -p dist
-            
             echo "Building binaries..."
-            
             # Build for Linux amd64
             echo "Building for Linux amd64..."
             GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-linux-amd64 ./cmd/ccbm
-            
             # Build for macOS amd64
             echo "Building for macOS amd64..."
             GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-amd64 ./cmd/ccbm
-            
             # Build for macOS arm64
             echo "Building for macOS arm64..."
             GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-darwin-arm64 ./cmd/ccbm
-            
             # Build for Windows amd64
             echo "Building for Windows amd64..."
             GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=${VERSION}" -o dist/ccbm-windows-amd64.exe ./cmd/ccbm
-            
             # Verify all binaries were created
             for binary in dist/ccbm-*; do
               if [ ! -f "$binary" ]; then
@@ -136,31 +141,30 @@ jobs:
           command: |
             # Get the latest commit message as release notes
             COMMIT_MSG=$(git log -1 --pretty=%B)
-            
-            # Only create release if this is a tag push or main branch
+
+            # Check if this is already a tagged commit
             if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
-              echo "Creating release for tag: ${VERSION}"
+              echo "Creating release for existing tag: ${VERSION}"
+              RELEASE_FLAGS="--title \"Release $VERSION\" --notes \"$COMMIT_MSG\""
             else
               echo "Creating pre-release for commit: ${VERSION}"
+              RELEASE_FLAGS="--title \"Pre-release $VERSION\" --notes \"$COMMIT_MSG\" --prerelease"
             fi
-            
-            # Create git tag if it doesn't exist
-            if ! git describe --tags --exact-match HEAD >/dev/null 2>&1; then
-              git tag $VERSION
-              git push origin $VERSION
-            fi
-            
-            # Create GitHub release with binaries
-            RELEASE_FLAGS="--title \"Release $VERSION\" --notes \"$COMMIT_MSG\""
-            if [[ $VERSION == *"-"* ]]; then
-              RELEASE_FLAGS="$RELEASE_FLAGS --prerelease"
-            fi
-            
+
+            # Create GitHub release with binaries (this will create the tag automatically)
             gh release create $VERSION $RELEASE_FLAGS \
               dist/ccbm-linux-amd64 \
               dist/ccbm-darwin-amd64 \
               dist/ccbm-darwin-arm64 \
-              dist/ccbm-windows-amd64.exe
+              dist/ccbm-windows-amd64.exe || {
+              echo "Release creation failed. This might be because the release already exists."
+              echo "Attempting to upload artifacts to existing release..."
+              gh release upload $VERSION \
+                dist/ccbm-linux-amd64 \
+                dist/ccbm-darwin-amd64 \
+                dist/ccbm-darwin-arm64 \
+                dist/ccbm-windows-amd64.exe --clobber
+            }
       - store_artifacts:
           path: dist/
           destination: binaries
@@ -172,13 +176,13 @@ workflows:
       # Run tests and linting in parallel for all branches
       - test
       - lint
-      
+
       # Build depends on both test and lint passing
       - build:
           requires:
             - test
             - lint
-      
+
       # Release only runs on main branch and depends on build
       - release:
           requires:
