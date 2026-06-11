@@ -4,6 +4,8 @@ version: 2
 updates:
   - package-ecosystem: gomod
     directory: /
+    cooldown:
+      default-days: 7
     allow:
       - dependency-type: all
     open-pull-requests-limit: 5
