@@ -12,20 +12,17 @@ import (
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/processor"
 )
 
-// MockProcessor implements a mock processor for testing.
-type MockProcessor struct {
-	ProcessImageFunc func(imagePath string) error
-	CallCount        int
-	LastImagePath    string
-}
+// newMockedApp builds an App backed by a Service with mock dependencies and
+// returns the mock file system so tests can seed files.
+func newMockedApp() (*cli.App, *processor.TestMockFileSystem) {
+	fs := processor.NewTestMockFileSystem()
+	decoder := processor.NewTestMockImageDecoder(processor.CreateTestImage(100, 100), "jpeg", nil)
+	encoder := processor.NewTestMockImageEncoder(nil)
+	resizer := processor.NewTestMockImageResizer()
+	config := processor.DefaultConfig()
 
-func (m *MockProcessor) ProcessImage(imagePath string) error {
-	m.CallCount++
-	m.LastImagePath = imagePath
-	if m.ProcessImageFunc != nil {
-		return m.ProcessImageFunc(imagePath)
-	}
-	return nil
+	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
+	return cli.NewAppWithProcessor(service), fs
 }
 
 func TestNewApp(t *testing.T) {
@@ -41,55 +38,53 @@ func TestNewAppWithProcessor(t *testing.T) {
 	assert.NotNil(t, app)
 }
 
-func TestApp_Run_Success(t *testing.T) {
-	// Create service with mock dependencies for testing
-	fs := processor.NewTestMockFileSystem()
-	decoder := processor.NewTestMockImageDecoder(processor.CreateTestImage(100, 100), "jpeg", nil)
-	encoder := processor.NewTestMockImageEncoder(nil)
-	resizer := processor.NewTestMockImageResizer()
-	config := processor.DefaultConfig()
+func TestApp_Run_Split_Success(t *testing.T) {
+	app, fs := newMockedApp()
 
-	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
-	app := cli.NewAppWithProcessor(service)
-
-	args := []string{"ccbm", "/test/image.jpg"}
-
-	// Add test file
 	fs.AddFile("/test/image.jpg", []byte("fake image"))
 
-	err := app.Run(args)
+	err := app.Run([]string{"ccbm", "split", "-f", "/test/image.jpg"})
 	assert.NoError(t, err)
 }
 
-func TestApp_Run_MissingArguments(t *testing.T) {
-	app := cli.NewApp()
+func TestApp_Run_Split_SpecialCharactersInPath(t *testing.T) {
+	app, fs := newMockedApp()
 
-	tests := []struct {
-		name string
-		args []string
-	}{
-		{
-			name: "no arguments",
-			args: []string{},
-		},
-		{
-			name: "only program name",
-			args: []string{"ccbm"},
-		},
-	}
+	path := "/test/dir with spaces/imágé (1).jpg"
+	fs.AddFile(path, []byte("fake image"))
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := app.Run(tt.args)
+	err := app.Run([]string{"ccbm", "split", "--file", path})
+	assert.NoError(t, err)
+}
 
-			require.Error(t, err)
-			assert.Contains(t, err.Error(), "usage:")
-		})
+func TestApp_Run_Split_MissingFileFlag(t *testing.T) {
+	app, _ := newMockedApp()
+
+	err := app.Run([]string{"ccbm", "split"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "required flag")
+}
+
+func TestApp_Run_NoArguments(t *testing.T) {
+	// Without a subcommand, the root command shows help and succeeds.
+	app, _ := newMockedApp()
+
+	for _, args := range [][]string{{}, {"ccbm"}} {
+		err := app.Run(args)
+		assert.NoError(t, err)
 	}
 }
 
-func TestApp_Run_ProcessorError(t *testing.T) {
-	// Create a service that will fail
+func TestApp_Run_UnknownCommand(t *testing.T) {
+	app, _ := newMockedApp()
+
+	err := app.Run([]string{"ccbm", "bogus"})
+
+	require.Error(t, err)
+}
+
+func TestApp_Run_Split_ProcessorError(t *testing.T) {
 	fs := processor.NewTestMockFileSystem()
 	fs.OpenFunc = func(_ string) (io.ReadCloser, error) {
 		return nil, errors.New("file not found")
@@ -103,9 +98,7 @@ func TestApp_Run_ProcessorError(t *testing.T) {
 	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
 	app := cli.NewAppWithProcessor(service)
 
-	args := []string{"ccbm", "/nonexistent/image.jpg"}
-
-	err := app.Run(args)
+	err := app.Run([]string{"ccbm", "split", "-f", "/nonexistent/image.jpg"})
 
 	require.Error(t, err)
 }

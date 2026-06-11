@@ -13,10 +13,10 @@ func TestDefaultConfig(t *testing.T) {
 	config := processor.DefaultConfig()
 
 	expectedConfig := processor.Config{
-		TargetSize: 378,
+		TargetSize: 484,
 		GridSize:   3,
 		TileSize:   116,
-		Spacing:    15,
+		Spacing:    68,
 	}
 
 	assert.Equal(t, expectedConfig, config)

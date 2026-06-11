@@ -14,10 +14,10 @@ func TestDefaultConfig_Values(t *testing.T) {
 	config := processor.DefaultConfig()
 
 	// Assert
-	assert.Equal(t, 378, config.TargetSize)
+	assert.Equal(t, 484, config.TargetSize)
 	assert.Equal(t, 3, config.GridSize)
 	assert.Equal(t, 116, config.TileSize)
-	assert.Equal(t, 15, config.Spacing)
+	assert.Equal(t, 68, config.Spacing)
 }
 
 func TestResizeImage_LandscapeImage(t *testing.T) {
