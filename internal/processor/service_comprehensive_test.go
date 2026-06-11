@@ -14,6 +14,8 @@ import (
 )
 
 func TestService_LoadImage_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	testImg := processor.CreateTestImage(100, 100)
@@ -33,6 +35,8 @@ func TestService_LoadImage_Success(t *testing.T) {
 }
 
 func TestService_LoadImage_FileNotFound(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	fs.OpenFunc = func(_ string) (io.ReadCloser, error) {
@@ -51,6 +55,8 @@ func TestService_LoadImage_FileNotFound(t *testing.T) {
 }
 
 func TestService_LoadImage_DecodeError(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	decoder := processor.NewTestMockImageDecoder(nil, "", errors.New("invalid image format"))
@@ -68,6 +74,8 @@ func TestService_LoadImage_DecodeError(t *testing.T) {
 }
 
 func TestService_ProcessImageData(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	resizer := processor.NewTestMockImageResizer()
 	config := processor.Config{
@@ -92,6 +100,8 @@ func TestService_ProcessImageData(t *testing.T) {
 }
 
 func TestService_SaveTile_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	encoder := processor.NewTestMockImageEncoder(nil)
@@ -109,6 +119,8 @@ func TestService_SaveTile_Success(t *testing.T) {
 }
 
 func TestService_SaveTile_CreateFileError(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	fs.CreateFunc = func(_ string) (io.WriteCloser, error) {
@@ -127,6 +139,8 @@ func TestService_SaveTile_CreateFileError(t *testing.T) {
 }
 
 func TestService_SaveTile_EncodeError(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	encoder := processor.NewTestMockImageEncoder(errors.New("encoding failed"))
@@ -142,6 +156,8 @@ func TestService_SaveTile_EncodeError(t *testing.T) {
 }
 
 func TestService_SaveTiles_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	encoder := processor.NewTestMockImageEncoder(nil)
@@ -186,6 +202,8 @@ func TestService_SaveTiles_Success(t *testing.T) {
 }
 
 func TestService_SaveTiles_TileError(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := processor.NewTestMockFileSystem()
 	encoder := processor.NewTestMockImageEncoder(errors.New("encoding failed"))
@@ -209,6 +227,8 @@ func TestService_SaveTiles_TileError(t *testing.T) {
 }
 
 func TestService_ProcessImage_FullWorkflow(t *testing.T) {
+	t.Parallel()
+
 	// Setup complete mock environment
 	fs := processor.NewTestMockFileSystem()
 	testImg := processor.CreateTestImage(400, 300)

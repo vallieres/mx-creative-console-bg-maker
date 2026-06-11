@@ -26,12 +26,16 @@ func newMockedApp() (*cli.App, *processor.TestMockFileSystem) {
 }
 
 func TestNewApp(t *testing.T) {
+	t.Parallel()
+
 	app := cli.NewApp()
 
 	assert.NotNil(t, app)
 }
 
 func TestNewAppWithProcessor(t *testing.T) {
+	t.Parallel()
+
 	customProcessor := processor.NewService()
 	app := cli.NewAppWithProcessor(customProcessor)
 
@@ -39,6 +43,8 @@ func TestNewAppWithProcessor(t *testing.T) {
 }
 
 func TestApp_Run_Split_Success(t *testing.T) {
+	t.Parallel()
+
 	app, fs := newMockedApp()
 
 	fs.AddFile("/test/image.jpg", []byte("fake image"))
@@ -48,6 +54,8 @@ func TestApp_Run_Split_Success(t *testing.T) {
 }
 
 func TestApp_Run_Split_SpecialCharactersInPath(t *testing.T) {
+	t.Parallel()
+
 	app, fs := newMockedApp()
 
 	path := "/test/dir with spaces/imágé (1).jpg"
@@ -58,6 +66,8 @@ func TestApp_Run_Split_SpecialCharactersInPath(t *testing.T) {
 }
 
 func TestApp_Run_Split_MissingFileFlag(t *testing.T) {
+	t.Parallel()
+
 	app, _ := newMockedApp()
 
 	err := app.Run([]string{"ccbm", "split"})
@@ -67,6 +77,8 @@ func TestApp_Run_Split_MissingFileFlag(t *testing.T) {
 }
 
 func TestApp_Run_NoArguments(t *testing.T) {
+	t.Parallel()
+
 	// Without a subcommand, the root command shows help and succeeds.
 	app, _ := newMockedApp()
 
@@ -77,6 +89,8 @@ func TestApp_Run_NoArguments(t *testing.T) {
 }
 
 func TestApp_Run_UnknownCommand(t *testing.T) {
+	t.Parallel()
+
 	app, _ := newMockedApp()
 
 	err := app.Run([]string{"ccbm", "bogus"})
@@ -85,6 +99,8 @@ func TestApp_Run_UnknownCommand(t *testing.T) {
 }
 
 func TestApp_Run_Split_ProcessorError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	fs.OpenFunc = func(_ string) (io.ReadCloser, error) {
 		return nil, errors.New("file not found")

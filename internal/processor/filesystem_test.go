@@ -13,6 +13,8 @@ import (
 )
 
 func TestOSFileSystem_Open_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup - create a temporary file
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "test.txt")
@@ -43,6 +45,8 @@ func TestOSFileSystem_Open_Success(t *testing.T) {
 }
 
 func TestOSFileSystem_Open_FileNotFound(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := &processor.OSFileSystem{}
 	nonExistentFile := "/path/that/does/not/exist/file.txt"
@@ -57,6 +61,8 @@ func TestOSFileSystem_Open_FileNotFound(t *testing.T) {
 }
 
 func TestOSFileSystem_Open_Directory(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	fs := &processor.OSFileSystem{}
@@ -74,6 +80,8 @@ func TestOSFileSystem_Open_Directory(t *testing.T) {
 }
 
 func TestOSFileSystem_Create_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	newFile := filepath.Join(tempDir, "created.txt")
@@ -102,6 +110,8 @@ func TestOSFileSystem_Create_Success(t *testing.T) {
 }
 
 func TestOSFileSystem_Create_InvalidPath(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	fs := &processor.OSFileSystem{}
 	invalidPath := "/root/cannot/create/here.txt" // Assuming no write permission
@@ -115,6 +125,8 @@ func TestOSFileSystem_Create_InvalidPath(t *testing.T) {
 }
 
 func TestOSFileSystem_Create_OverwriteExisting(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	existingFile := filepath.Join(tempDir, "existing.txt")
@@ -149,6 +161,8 @@ func TestOSFileSystem_Create_OverwriteExisting(t *testing.T) {
 }
 
 func TestOSFileSystem_Create_NestedDirectory(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	subDir := filepath.Join(tempDir, "subdir")
@@ -180,6 +194,8 @@ func TestOSFileSystem_Create_NestedDirectory(t *testing.T) {
 }
 
 func TestOSFileSystem_Create_EmptyFile(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	emptyFile := filepath.Join(tempDir, "empty.txt")
@@ -203,12 +219,16 @@ func TestOSFileSystem_Create_EmptyFile(t *testing.T) {
 }
 
 func TestOSFileSystem_InterfaceCompliance(t *testing.T) {
+	t.Parallel()
+
 	// This test ensures OSFileSystem implements the FileSystem interface
 	var fs processor.FileSystem = &processor.OSFileSystem{}
 	assert.NotNil(t, fs)
 }
 
 func TestOSFileSystem_RoundTrip(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "roundtrip.txt")
@@ -244,6 +264,8 @@ func TestOSFileSystem_RoundTrip(t *testing.T) {
 
 // Test with special file names.
 func TestOSFileSystem_SpecialCharacters(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	tempDir := t.TempDir()
 	specialFile := filepath.Join(tempDir, "file with spaces & symbols!.txt")

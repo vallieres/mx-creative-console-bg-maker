@@ -55,7 +55,7 @@ that represent the 9 keys on the MX Creative Console.
 		Long: `Resizes and crops the input image to a square, then splits it into
 9 tiles matching the 3x3 key layout of the MX Creative Console.
 The tiles are saved as PNG files next to the input image.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.processor.ProcessImage(inputFile)
 		},
 	}
@@ -68,7 +68,7 @@ The tiles are saved as PNG files next to the input image.`,
 	return rootCmd
 }
 
-// Run executes the CLI application. args is expected to be os.Args
+// Run executes the CLI application. args is expected to be [os.Args]
 // (the program name in args[0] is skipped).
 func (a *App) Run(args []string) error {
 	rootCmd := a.NewRootCmd()

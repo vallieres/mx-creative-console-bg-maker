@@ -10,6 +10,8 @@ import (
 )
 
 func TestDefaultConfig(t *testing.T) {
+	t.Parallel()
+
 	config := processor.DefaultConfig()
 
 	expectedConfig := processor.Config{
@@ -23,6 +25,8 @@ func TestDefaultConfig(t *testing.T) {
 }
 
 func TestResizeImage(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		origWidth   int
@@ -55,6 +59,8 @@ func TestResizeImage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// Create test image
 			testImg := processor.CreateTestImage(tt.origWidth, tt.origHeight)
 
@@ -86,6 +92,8 @@ func TestResizeImage(t *testing.T) {
 }
 
 func TestCropToSquare(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name       string
 		imgWidth   int
@@ -108,6 +116,8 @@ func TestCropToSquare(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			testImg := processor.CreateTestImage(tt.imgWidth, tt.imgHeight)
 
 			result := processor.CropToSquare(testImg, tt.targetSize)
@@ -125,6 +135,8 @@ func TestCropToSquare(t *testing.T) {
 }
 
 func TestSplitIntoTiles(t *testing.T) {
+	t.Parallel()
+
 	config := processor.Config{
 		TargetSize: 378,
 		GridSize:   3,

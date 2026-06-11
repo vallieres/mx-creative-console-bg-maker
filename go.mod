@@ -1,6 +1,6 @@
 module github.com/vallieres/mx-creative-console-bg-maker
 
-go 1.25.0
+go 1.26.4
 
 require (
 	github.com/gen2brain/avif v0.4.4

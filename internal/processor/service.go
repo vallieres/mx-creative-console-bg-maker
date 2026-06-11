@@ -28,7 +28,13 @@ func NewService() *Service {
 }
 
 // NewServiceWithDeps creates a new processor service with custom dependencies.
-func NewServiceWithDeps(fs FileSystem, decoder ImageDecoder, encoder ImageEncoder, resizer ImageResizer, config Config) *Service {
+func NewServiceWithDeps(
+	fs FileSystem,
+	decoder ImageDecoder,
+	encoder ImageEncoder,
+	resizer ImageResizer,
+	config Config,
+) *Service {
 	return &Service{
 		fileSystem: fs,
 		decoder:    decoder,
