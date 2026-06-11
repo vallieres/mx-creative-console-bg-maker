@@ -13,16 +13,16 @@
 <div align="center"></div>
 
 <p><font size="3">
-        The tool will create 9 PNG files in the same directory as the input image, named with the format `originalname_1.png` through `originalname_9.png`.
-    </font></p>
+    The tool will create 9 PNG files in the same directory as the input image, named with the format `originalname_1.png` through `originalname_9.png`.
+</font></p>
 
 ## 🎯 Features
 
-- Resizes images to 378x378px while maintaining aspect ratio
+- Resizes images to 484x484px
 - Intelligently resizes based on the largest dimension
 - Crops from the center to preserve image focus
 - Splits into 9 equal tiles with proper spacing
-- Supports JPEG and PNG input formats
+- Supports JPEG, PNG, WebP, HEIC, and AVIF input formats
 - Outputs individual tiles as PNG files
 
 ## ⚡️ Installation
@@ -43,7 +43,7 @@ go install github.com/vallieres/mx-creative-console-bg-maker/cmd/ccbm@latest
 ## 🛞 Usage
 
 ```bash
-ccbm <image_path>
+ccbm split -f <image_path>
 ```
 
 ## 📝 License

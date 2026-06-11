@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	defaultTargetSize = 378
+	defaultTargetSize = 484
 	defaultGridSize   = 3
 	defaultTileSize   = 116
-	defaultSpacing    = 15
+	defaultSpacing    = 68
 	centerDivisor     = 2
 )
 

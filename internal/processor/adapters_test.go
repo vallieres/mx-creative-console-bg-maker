@@ -16,6 +16,8 @@ import (
 )
 
 func TestStandardImageDecoder_Decode_PNG(t *testing.T) {
+	t.Parallel()
+
 	// Setup - create a real PNG image in memory
 	img := image.NewRGBA(image.Rect(0, 0, 10, 10))
 	img.Set(5, 5, color.RGBA{R: 255, G: 0, B: 0, A: 255})
@@ -44,6 +46,8 @@ func TestStandardImageDecoder_Decode_PNG(t *testing.T) {
 }
 
 func TestStandardImageDecoder_Decode_JPEG(t *testing.T) {
+	t.Parallel()
+
 	// Setup - create a real JPEG image in memory
 	img := image.NewRGBA(image.Rect(0, 0, 10, 10))
 	for y := range 10 {
@@ -72,6 +76,8 @@ func TestStandardImageDecoder_Decode_JPEG(t *testing.T) {
 }
 
 func TestStandardImageDecoder_Decode_InvalidData(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	decoder := &processor.StandardImageDecoder{}
 	invalidData := strings.NewReader("not an image")
@@ -86,6 +92,8 @@ func TestStandardImageDecoder_Decode_InvalidData(t *testing.T) {
 }
 
 func TestPNGEncoder_Encode_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	img := processor.CreateTestImage(50, 50)
 	encoder := &processor.PNGEncoder{}
@@ -112,6 +120,8 @@ func TestPNGEncoder_Encode_Success(t *testing.T) {
 }
 
 func TestPNGEncoder_Encode_NilImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	encoder := &processor.PNGEncoder{}
 	var buf bytes.Buffer
@@ -124,6 +134,8 @@ func TestPNGEncoder_Encode_NilImage(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_Downscale(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	originalImg := processor.CreateTestImage(100, 100)
 	resizer := &processor.LanczosResizer{}
@@ -141,6 +153,8 @@ func TestLanczosResizer_Resize_Downscale(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_Upscale(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	originalImg := processor.CreateTestImage(50, 50)
 	resizer := &processor.LanczosResizer{}
@@ -158,6 +172,8 @@ func TestLanczosResizer_Resize_Upscale(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_MaintainAspectRatio(t *testing.T) {
+	t.Parallel()
+
 	// Setup - create a rectangular image
 	originalImg := processor.CreateTestImage(200, 100)
 	resizer := &processor.LanczosResizer{}
@@ -177,6 +193,8 @@ func TestLanczosResizer_Resize_MaintainAspectRatio(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_MaintainAspectRatioHeight(t *testing.T) {
+	t.Parallel()
+
 	// Setup - create a rectangular image
 	originalImg := processor.CreateTestImage(100, 200)
 	resizer := &processor.LanczosResizer{}
@@ -196,6 +214,8 @@ func TestLanczosResizer_Resize_MaintainAspectRatioHeight(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_ZeroBoth(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	originalImg := processor.CreateTestImage(100, 100)
 	resizer := &processor.LanczosResizer{}
@@ -213,6 +233,8 @@ func TestLanczosResizer_Resize_ZeroBoth(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_SinglePixel(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	originalImg := processor.CreateTestImage(100, 100)
 	resizer := &processor.LanczosResizer{}
@@ -230,6 +252,8 @@ func TestLanczosResizer_Resize_SinglePixel(t *testing.T) {
 }
 
 func TestLanczosResizer_Resize_LargeImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	originalImg := processor.CreateTestImage(1000, 1000)
 	resizer := &processor.LanczosResizer{}

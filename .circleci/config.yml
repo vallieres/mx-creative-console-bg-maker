@@ -2,18 +2,18 @@
 version: 2.1
 
 orbs:
-  go: circleci/go@3.0.2
-  github-cli: circleci/github-cli@2.7.0
+  go: circleci/go@3.0.4
+  github-cli: circleci/github-cli@2.7.2
 
 executors:
   go-executor:
     docker:
-      - image: cimg/go:1.24
+      - image: cimg/go:1.26
     resource_class: medium
 
   go-executor-large:
     docker:
-      - image: cimg/go:1.24
+      - image: cimg/go:1.26
     resource_class: large
 
   semgrep-executor:
@@ -43,17 +43,17 @@ jobs:
       - go/save-mod-cache
       - restore_cache:
           keys:
-            - golangci-lint-v2.1.6-{{ arch }}
+            - golangci-lint-v2.12.2-{{ arch }}
       - run:
           name: Install golangci-lint
           command: |
             if [ ! -f ~/bin/golangci-lint ]; then
               mkdir -p ~/bin
-              go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
+              go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
               cp $(go env GOPATH)/bin/golangci-lint ~/bin/
             fi
       - save_cache:
-          key: golangci-lint-v2.1.6-{{ arch }}
+          key: golangci-lint-v2.12.2-{{ arch }}
           paths:
             - ~/bin/golangci-lint
       - run:

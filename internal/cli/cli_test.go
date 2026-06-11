@@ -12,37 +12,9 @@ import (
 	"github.com/vallieres/mx-creative-console-bg-maker/internal/processor"
 )
 
-// MockProcessor implements a mock processor for testing.
-type MockProcessor struct {
-	ProcessImageFunc func(imagePath string) error
-	CallCount        int
-	LastImagePath    string
-}
-
-func (m *MockProcessor) ProcessImage(imagePath string) error {
-	m.CallCount++
-	m.LastImagePath = imagePath
-	if m.ProcessImageFunc != nil {
-		return m.ProcessImageFunc(imagePath)
-	}
-	return nil
-}
-
-func TestNewApp(t *testing.T) {
-	app := cli.NewApp()
-
-	assert.NotNil(t, app)
-}
-
-func TestNewAppWithProcessor(t *testing.T) {
-	customProcessor := processor.NewService()
-	app := cli.NewAppWithProcessor(customProcessor)
-
-	assert.NotNil(t, app)
-}
-
-func TestApp_Run_Success(t *testing.T) {
-	// Create service with mock dependencies for testing
+// newMockedApp builds an App backed by a Service with mock dependencies and
+// returns the mock file system so tests can seed files.
+func newMockedApp() (*cli.App, *processor.TestMockFileSystem) {
 	fs := processor.NewTestMockFileSystem()
 	decoder := processor.NewTestMockImageDecoder(processor.CreateTestImage(100, 100), "jpeg", nil)
 	encoder := processor.NewTestMockImageEncoder(nil)
@@ -50,46 +22,85 @@ func TestApp_Run_Success(t *testing.T) {
 	config := processor.DefaultConfig()
 
 	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
-	app := cli.NewAppWithProcessor(service)
+	return cli.NewAppWithProcessor(service), fs
+}
 
-	args := []string{"ccbm", "/test/image.jpg"}
+func TestNewApp(t *testing.T) {
+	t.Parallel()
 
-	// Add test file
+	app := cli.NewApp()
+
+	assert.NotNil(t, app)
+}
+
+func TestNewAppWithProcessor(t *testing.T) {
+	t.Parallel()
+
+	customProcessor := processor.NewService()
+	app := cli.NewAppWithProcessor(customProcessor)
+
+	assert.NotNil(t, app)
+}
+
+func TestApp_Run_Split_Success(t *testing.T) {
+	t.Parallel()
+
+	app, fs := newMockedApp()
+
 	fs.AddFile("/test/image.jpg", []byte("fake image"))
 
-	err := app.Run(args)
+	err := app.Run([]string{"ccbm", "split", "-f", "/test/image.jpg"})
 	assert.NoError(t, err)
 }
 
-func TestApp_Run_MissingArguments(t *testing.T) {
-	app := cli.NewApp()
+func TestApp_Run_Split_SpecialCharactersInPath(t *testing.T) {
+	t.Parallel()
 
-	tests := []struct {
-		name string
-		args []string
-	}{
-		{
-			name: "no arguments",
-			args: []string{},
-		},
-		{
-			name: "only program name",
-			args: []string{"ccbm"},
-		},
-	}
+	app, fs := newMockedApp()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := app.Run(tt.args)
+	path := "/test/dir with spaces/imágé (1).jpg"
+	fs.AddFile(path, []byte("fake image"))
 
-			require.Error(t, err)
-			assert.Contains(t, err.Error(), "usage:")
-		})
+	err := app.Run([]string{"ccbm", "split", "--file", path})
+	assert.NoError(t, err)
+}
+
+func TestApp_Run_Split_MissingFileFlag(t *testing.T) {
+	t.Parallel()
+
+	app, _ := newMockedApp()
+
+	err := app.Run([]string{"ccbm", "split"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "required flag")
+}
+
+func TestApp_Run_NoArguments(t *testing.T) {
+	t.Parallel()
+
+	// Without a subcommand, the root command shows help and succeeds.
+	app, _ := newMockedApp()
+
+	for _, args := range [][]string{{}, {"ccbm"}} {
+		err := app.Run(args)
+		assert.NoError(t, err)
 	}
 }
 
-func TestApp_Run_ProcessorError(t *testing.T) {
-	// Create a service that will fail
+func TestApp_Run_UnknownCommand(t *testing.T) {
+	t.Parallel()
+
+	app, _ := newMockedApp()
+
+	err := app.Run([]string{"ccbm", "bogus"})
+
+	require.Error(t, err)
+}
+
+func TestApp_Run_Split_ProcessorError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	fs.OpenFunc = func(_ string) (io.ReadCloser, error) {
 		return nil, errors.New("file not found")
@@ -103,9 +114,7 @@ func TestApp_Run_ProcessorError(t *testing.T) {
 	service := processor.NewServiceWithDeps(fs, decoder, encoder, resizer, config)
 	app := cli.NewAppWithProcessor(service)
 
-	args := []string{"ccbm", "/nonexistent/image.jpg"}
-
-	err := app.Run(args)
+	err := app.Run([]string{"ccbm", "split", "-f", "/nonexistent/image.jpg"})
 
 	require.Error(t, err)
 }

@@ -2,10 +2,14 @@ package processor
 
 import (
 	"image"
+	_ "image/jpeg" // Register JPEG format
 	"image/png"
 	"io"
 
+	_ "github.com/gen2brain/avif" // Register AVIF format
+	_ "github.com/gen2brain/heic" // Register HEIC format
 	"github.com/nfnt/resize"
+	_ "golang.org/x/image/webp" // Register WebP format
 )
 
 // StandardImageDecoder implements ImageDecoder using Go's standard image package.

@@ -12,11 +12,15 @@ import (
 )
 
 func TestNewService(t *testing.T) {
+	t.Parallel()
+
 	service := processor.NewService()
 	assert.NotNil(t, service)
 }
 
 func TestNewServiceWithDeps(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	decoder := processor.NewTestMockImageDecoder(nil, "", nil)
 	encoder := processor.NewTestMockImageEncoder(nil)
@@ -28,6 +32,8 @@ func TestNewServiceWithDeps(t *testing.T) {
 }
 
 func TestService_ProcessImage_Success(t *testing.T) {
+	t.Parallel()
+
 	// Setup mocks
 	fs := processor.NewTestMockFileSystem()
 	testImg := processor.CreateTestImage(400, 300)
@@ -64,6 +70,8 @@ func TestService_ProcessImage_Success(t *testing.T) {
 }
 
 func TestService_ProcessImage_FileOpenError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	fs.OpenFunc = func(_ string) (io.ReadCloser, error) {
 		return nil, errors.New("file not found")
@@ -85,6 +93,8 @@ func TestService_ProcessImage_FileOpenError(t *testing.T) {
 }
 
 func TestService_ProcessImage_DecodeError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	fs.AddFile("/test/image.jpg", []byte("fake jpeg data"))
 
@@ -104,6 +114,8 @@ func TestService_ProcessImage_DecodeError(t *testing.T) {
 }
 
 func TestService_ProcessImage_EncodeError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	testImg := processor.CreateTestImage(400, 300)
 	decoder := processor.NewTestMockImageDecoder(testImg, "jpeg", nil)
@@ -124,6 +136,8 @@ func TestService_ProcessImage_EncodeError(t *testing.T) {
 }
 
 func TestService_ProcessImage_CreateFileError(t *testing.T) {
+	t.Parallel()
+
 	fs := processor.NewTestMockFileSystem()
 	fs.CreateFunc = func(_ string) (io.WriteCloser, error) {
 		return nil, errors.New("permission denied")

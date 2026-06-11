@@ -10,17 +10,21 @@ import (
 )
 
 func TestDefaultConfig_Values(t *testing.T) {
+	t.Parallel()
+
 	// Execute
 	config := processor.DefaultConfig()
 
 	// Assert
-	assert.Equal(t, 378, config.TargetSize)
+	assert.Equal(t, 484, config.TargetSize)
 	assert.Equal(t, 3, config.GridSize)
 	assert.Equal(t, 116, config.TileSize)
-	assert.Equal(t, 15, config.Spacing)
+	assert.Equal(t, 68, config.Spacing)
 }
 
 func TestResizeImage_LandscapeImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	testImg := processor.CreateTestImage(800, 600)
 	targetSize := 200
@@ -43,6 +47,8 @@ func TestResizeImage_LandscapeImage(t *testing.T) {
 }
 
 func TestResizeImage_PortraitImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	testImg := processor.CreateTestImage(600, 800)
 	targetSize := 200
@@ -65,6 +71,8 @@ func TestResizeImage_PortraitImage(t *testing.T) {
 }
 
 func TestResizeImage_SquareImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	testImg := processor.CreateTestImage(600, 600)
 	targetSize := 200
@@ -87,6 +95,8 @@ func TestResizeImage_SquareImage(t *testing.T) {
 }
 
 func TestCropToSquare_WideImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	testImg := processor.CreateTestImage(500, 300)
 	targetSize := 200
@@ -104,6 +114,8 @@ func TestCropToSquare_WideImage(t *testing.T) {
 }
 
 func TestCropToSquare_TallImage(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	testImg := processor.CreateTestImage(300, 500)
 	targetSize := 200
@@ -121,6 +133,8 @@ func TestCropToSquare_TallImage(t *testing.T) {
 }
 
 func TestCropToSquare_ExactSize(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	targetSize := 200
 	testImg := processor.CreateTestImage(targetSize, targetSize)
@@ -138,6 +152,8 @@ func TestCropToSquare_ExactSize(t *testing.T) {
 }
 
 func TestSplitIntoTiles_DefaultConfig(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.DefaultConfig()
 	testImg := processor.CreateTestImage(config.TargetSize, config.TargetSize)
@@ -176,6 +192,8 @@ func TestSplitIntoTiles_DefaultConfig(t *testing.T) {
 }
 
 func TestSplitIntoTiles_CustomConfig(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.Config{
 		TargetSize: 200,
@@ -205,6 +223,8 @@ func TestSplitIntoTiles_CustomConfig(t *testing.T) {
 }
 
 func TestSplitIntoTiles_SingleTile(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.Config{
 		TargetSize: 100,
@@ -226,6 +246,8 @@ func TestSplitIntoTiles_SingleTile(t *testing.T) {
 }
 
 func TestSplitIntoTiles_LargeGrid(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.Config{
 		TargetSize: 500,
@@ -251,6 +273,8 @@ func TestSplitIntoTiles_LargeGrid(t *testing.T) {
 }
 
 func TestTileCoordinate_NumberSequence(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.Config{
 		TargetSize: 300,
@@ -271,6 +295,8 @@ func TestTileCoordinate_NumberSequence(t *testing.T) {
 }
 
 func TestProcessingResult_Structure(t *testing.T) {
+	t.Parallel()
+
 	// Setup
 	config := processor.DefaultConfig()
 	testImg := processor.CreateTestImage(config.TargetSize, config.TargetSize)
